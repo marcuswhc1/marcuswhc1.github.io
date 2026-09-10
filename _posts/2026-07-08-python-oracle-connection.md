@@ -20,7 +20,7 @@ import oracledb
 import os
 ```
 
-## Retrieving Credentials from Environment Variables
+## Retrieving credentials from environment variables
 Store Oracle credentials as environment variables instead of hardcoding them into the code. This is especially important in containerised deployments where secrets are injected at pod startup.
 ```python
 #--------------------------
@@ -31,7 +31,7 @@ oracle_password = os.environ.get('ORACLE_PASSWORD')
 oracle_dsn      = os.environ.get('ORACLE_DSN')
 ```
 
-## Finding Full Server Connection Details using tnsping
+## Finding full server connection details using tnsping
 Before connecting, the full DSN (Data Source Name) string is required in the following format:
 ```
 hostname:port/service_name
@@ -85,7 +85,7 @@ def get_oracle_connection():
         return None
 ```
 
-## Use Case
+## Use case
 The example below demonstrates how to query data from Oracle Database into a pandas DataFrame.
 ```python
 import pandas as pd
