@@ -8,7 +8,7 @@ description: A guide on using Red Hat Openshift for building and deploying appli
 
 
 # What is Red Hat OpenShift?
-red Hat OpenShift is a **cloud platform** that runs your applications reliably, at scale, and automatically.
+Red Hat OpenShift is a **cloud platform** that runs your applications reliably, at scale, and automatically.
 
 | Environments          | Description                                          |
 | --------------------- | ---------------------------------------------------- |
