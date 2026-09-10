@@ -6,22 +6,17 @@ tags: [kubernetes, docker, documentation, knowledge]
 description: A guide on using Red Hat Openshift for building and deploying applications in the cloud enviroment.
 ---
 
-# Red Hat OpenShift — Beginner's Guide
 
+# What is Red Hat OpenShift?
+red Hat OpenShift is a **cloud platform** that runs your applications reliably, at scale, and automatically.
 
-## What Is OpenShift?
+| Environments          | Description                                          |
+| --------------------- | ---------------------------------------------------- |
+| **Your laptop**       | Runs 1 app, for 1 person                             |
+| **Red Hat Openshift** | Runs 100 apps, for millions of people, automatically |
+---
 
-OpenShift is a **cloud platform** that runs your applications reliably, at scale, and automatically.
-
-|                 | Description                                          |
-| --------------- | ---------------------------------------------------- |
-| **Your laptop** | Runs 1 app, for 1 person                             |
-| **OpenShift**   | Runs 100 apps, for millions of people, automatically |
-
-
-
-## Key Concepts
-
+# Key concepts in Red Hat Openshift
 | Term                  | Description                                      |
 | --------------------- | ------------------------------------------------ |
 | **Container**         | A packaged app with everything it needs to run   |
@@ -36,11 +31,9 @@ OpenShift is a **cloud platform** that runs your applications reliably, at scale
 | **ConfigMap**         | Stores non-sensitive settings                    |
 | **PVC**               | Persistent storage that survives pod restarts    |
 | **CronJob**           | A scheduled task that runs on a defined interval |
+---
 
-
-
-## How Your Files Work Together
-
+# Overall flow from Gitlab to deployment
 ```
 YOUR CODE IN GITLAB
 (app.py, requirements.txt)
@@ -82,12 +75,10 @@ YOUR CODE IN GITLAB
          ▼
     🟢 LIVE RUNNING APP
 ```
+---
 
-
-
-## The Three Environments
-
-
+# The three environments within Red Hat Openshift
+```
 ┌──────────────────────────────────────────────────────┐
 │                  BUILD NAMESPACE                     |
 |               e.g. <namespace>-build                 |
@@ -115,9 +106,9 @@ YOUR CODE IN GITLAB
 │ Purpose: Test safely     │       │ Purpose: Real users    │
 └──────────────────────────┘       └────────────────────────┘
 ```
+---
 
-### Files You Need
-
+# The minimum files you need for deployment
 ```
 your-project/
 ├── app.py                    ← Your Python code
@@ -127,107 +118,37 @@ your-project/
 ├── deployment-staging.yaml   ← Staging environment
 └── deployment-prod.yaml      ← Production environment
 ```
-
-### Key Differences: Staging vs Production
-
-| Setting      | Staging               | Production          |
-| ------------ | --------------------- | ------------------- |
-| `namespace`  | `<namespace>-staging` | `<namespace>-prod`  |
-| `replicas`   | `1`                   | `3`                 |
-| Image source | `<namespace>-build`   | `<namespace>-build` |
-| Database     | Test DB               | Real DB             |
-| Secrets      | Test values           | Real values         |
-
 ---
 
-## Routes vs Services
-
-|                     | Service                               | Route                                          |
-| ------------------- | ------------------------------------- | ---------------------------------------------- |
-| **Purpose**         | Internal pod-to-pod communication     | External public access                         |
-| **Accessible from** | Inside the cluster only               | Browser / internet                             |
-| **Example URL**     | `http://<namespace>-backend-svc:8080` | `https://<namespace>-backend.apps.cluster.com` |
-| **Created by**      | Your deployment YAML                  | Manually or via YAML                           |
-| **Use for**         | Pod-to-pod, CronJobs, DB connections  | Frontend, external APIs                        |
-
-> **Rule:** If traffic stays inside OpenShift (e.g. your CronJob pinging the backend), use the **Service name**. If a browser or external tool needs access, create a **Route**.
-
+# Differences: Staging vs Production enviroment
+```
+| Setting      | Staging             | Production        |
+| ------------ | ------------------- | ----------------- |
+| namespace    | <namespace>-staging | <namespace>-prod  |
+| replicas     | 1                   | 3                 |
+| Image source | <namespace>-build   | <namespace>-build |
+| Database     | Test DB             | Real DB           |
+| Secrets      | Test values         | Real values       |
+```
 ---
 
-## PVC and PostgreSQL Alpine
-
-### PVC — PersistentVolumeClaim
-
-A **PVC** is cloud storage for your database inside OpenShift.
-
-- **Without PVC:** All data is lost when a pod restarts
-- **With PVC:** Data persists even after pod crashes or restarts
-- Think of it as: Container = short-term memory. PVC = the hard drive.
-
-```yaml
-kind: PersistentVolumeClaim
-metadata:
-  name: <namespace>-postgres-data
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
+# Differences: Routes vs Services
 ```
+|                 | Service                              | Route                                        |
+| --------------- | ------------------------------------ | -------------------------------------------- |
+| Purpose         | Internal pod-to-pod communication    | External public access                       |
+| Accessible from | Inside the cluster only              | Browser / internet                           |
+| Example URL     | http://<namespace>-backend-svc:8080  | https://<namespace>-backend.apps.cluster.com |
+| Created by      | Your deployment YAML                 | Manually or via YAML                         |
+| Use for         | Pod-to-pod, CronJobs, DB connections | Frontend, external APIs                      |
 
-### postgres:16-alpine
-
-`postgres:16-alpine` is a **containerised PostgreSQL database**.
-
-| Part       | Meaning                                              |
-| ---------- | ---------------------------------------------------- |
-| `postgres` | PostgreSQL — works like MySQL, stores data in tables |
-| `16`       | Version 16                                           |
-| `alpine`   | Lightweight Linux (~80MB vs ~400MB for standard)     |
-
-The PVC mounts to `/var/lib/postgresql/data` inside the container so all database records survive pod restarts.
-
+```
+>**Rule:** 
+- If traffic stays inside OpenShift (e.g. your CronJob pinging the backend), use the Service name. 
+- If a browser or external tool needs access, create a Route.
 ---
 
-## When to Rebuild vs `oc apply`
-
-### Rebuild Image — When Code Changes
-
-Run `oc start-build <name>` when you change:
-
-- Any `.py` file
-- `requirements.txt`
-- `Dockerfile`
-
-### `oc apply -f` Only — When Config Changes
-
-Run `oc apply -f yourfile.yaml` when you change:
-
-- `cronjob.yaml`
-- `deployment.yaml`
-- `bc.yaml`
-
-### Secret Changes — UI Only
-
-Update directly in OpenShift UI → no rebuild, no `oc apply` needed. The next pod startup automatically reads the new value.
-
-```
-┌──────────────────────────────────────────┐
-│ WHAT CHANGED?          WHAT TO DO?       │
-├──────────────────────────────────────────┤
-│ .py / requirements.txt / Dockerfile      │
-│                     → oc start-build     │
-├──────────────────────────────────────────┤
-│ *.yaml file         → oc apply -f        │
-├──────────────────────────────────────────┤
-│ Secret value        → Update in UI only  │
-└──────────────────────────────────────────┘
-```
-
-
-
-## OC CLI — Command Line Tool
+# OC Command Line Tool (CLI)
 
 ### Installation
 
@@ -241,15 +162,15 @@ Update directly in OpenShift UI → no rebuild, no `oc apply` needed. The next p
 ```bash
 # Authentication
 oc login --token=sha256~xxx --server=https://api.cluster.com:6443
-oc whoami                          # Check if still logged in
+oc whoami                                                           # Check if still logged in
 
 # Namespace
-oc project <namespace>-staging           # Switch namespace
-oc project                         # Show current namespace
+oc project <namespace>-staging                                      # Switch namespace
+oc project                                                          # Show current namespace
 
 # Resources
-oc get pods                        # List pods
-oc get pods -w                     # Watch pods (live)
+oc get pods                                                         # List pods
+oc get pods -w                                                      # Watch pods (live)
 oc get deployments
 oc get cronjobs
 oc get jobs
@@ -259,63 +180,23 @@ oc get imagestreams
 
 # Logs & Debugging
 oc logs <pod-name>
-oc logs -f bc/<buildconfig-name>   # Follow build logs
+oc logs -f bc/<buildconfig-name>                                    # Follow build logs
 oc describe pod <pod-name>
 oc get events --sort-by='.lastTimestamp'
 
 # Apply / Update
-oc apply -f deployment.yaml        # Create or update resource
-oc delete job <job-name>           # Delete a job
+oc apply -f deployment.yaml                                         # Create or update deployment
+oc delete job <job-name>                                            # Delete a job
+oc start-build <buildconfig-name>                                   # Build the image
 
 # Rollback
 oc rollout undo deployment/<name>
 ```
 
 > **Token Expiry:** Tokens expire (usually within 24 hours). Run `oc whoami` to check. If expired, get a fresh token from the OpenShift UI → your username → **Copy login command**.
+---
 
-
-
-## OC CLI — Port Forwarding
-
-### What It Does
-
-Port forwarding creates a **temporary tunnel** from your local computer to a pod running inside OpenShift. This lets you test services locally without needing a public Route.
-
-```
-YOUR LAPTOP          OPENSHIFT
-────────────         ──────────
-localhost:8080  ←──► <namespace>-backend-svc:8080
-     ↑
-Your Python script
-or browser calls this
-```
-
-### Command
-
-```bash
-# Forward local port 8080 to the service port 8080
-oc port-forward svc/<namespace>-backend-svc 8080:8080
-
-# Forward to a specific pod directly
-oc port-forward pod/<pod-name> 8080:8080
-
-# Use a different local port if 8080 is taken
-oc port-forward svc/<namespace>-backend-svc 9090:8080
-```
-
-> **Important:** Keep the terminal window open. Closing it breaks the tunnel. Open a second terminal to run your scripts.
-
-### Local vs OpenShift URLs
-
-|              | Local Testing           | In OpenShift                          |
-| ------------ | ----------------------- | ------------------------------------- |
-| **Backend**  | `http://localhost:8080` | `http://<namespace>-backend-svc:8080` |
-| **Postgres** | `http://localhost:5432` | `http://<namespace>-postgres:5432`    |
-| **MySQL/ES** | Actual hostname         | Actual hostname                       |
-
-
-
-## Building Images and Deploying via OC CLI
+# Building images and deploying via OC CLI
 
 ### First-Time Setup
 
@@ -359,14 +240,101 @@ oc logs -f bc/<buildconfig-name>
 ### Future YAML-Only Updates
 
 ```bash
+# No rebuild needed
 oc project <namespace>-staging
 oc apply -f deployment-staging.yaml
-# No rebuild needed
+```
+---
+
+# Persistent Volumne Claim (PVC)
+
+A **PVC** is cloud storage for your database inside OpenShift.
+
+- **Without PVC:** All data is lost when a pod restarts
+- **With PVC:** Data persists even after pod crashes or restarts
+- Think of it as: Container = short-term memory. PVC = the hard drive.
+
+```yaml
+kind: PersistentVolumeClaim
+metadata:
+  name: <namespace>-postgres-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+```
+---
+
+# Containerised PostgresSQL in Red Hat Openshift
+
+`postgres:16-alpine` is a **containerised PostgreSQL database**.
+
+| Part       | Meaning                                              |
+| ---------- | ---------------------------------------------------- |
+| `postgres` | PostgreSQL — works like MySQL, stores data in tables |
+| `16`       | Version 16                                           |
+| `alpine`   | Lightweight Linux (~80MB vs ~400MB for standard)     |
+
+The PVC mounts to `/var/lib/postgresql/data` inside the container so all database records survive pod restarts.
+---
+
+# When to rebuild vs "oc apply"
+
+### Rebuild image — when code changes
+
+Run `oc start-build <name>` when you change:
+
+- Any `.py` file
+- `requirements.txt`
+- `Dockerfile`
+
+### `oc apply -f` only — when config file changes
+
+Run `oc apply -f yourfile.yaml` when you change:
+
+- `cronjob.yaml`
+- `deployment.yaml`
+- `bc.yaml`
+---
+
+# Secrets inside Red Hat Openshift
+
+Update and store all secrets directly in OpenShift UI. Whenever there is a change in secret value, there is no need to rebuild and no `oc apply` needed. The next pod startup automatically reads and take in the values from the secrets.
+---
+
+# Port forwarding for local development
+
+### What it does
+Port forwarding creates a **temporary tunnel** from your local computer to a pod running inside OpenShift. This lets you test services locally without needing a public Route.
+
+```
+YOUR LAPTOP          OPENSHIFT
+────────────         ──────────
+localhost:8080  ←──► <namespace>-backend-svc:8080
+     ↑
+Your Python script
+or browser calls this
 ```
 
+### Command
 
+```bash
+# Forward local port 8080 to the service port 8080
+oc port-forward svc/<namespace>-backend-svc 8080:8080
 
-## CronJobs in OpenShift
+# Forward to a specific pod directly
+oc port-forward pod/<pod-name> 8080:8080
+
+# Use a different local port if 8080 is taken
+oc port-forward svc/<namespace>-backend-svc 9090:8080
+```
+
+> **Important:** Keep the terminal window open. Closing it breaks the tunnel. Open a second terminal to run your scripts.
+---
+
+# Cronjobs in Red Hat penShift
 
 A **CronJob** is a scheduled task that runs automatically at defined intervals. It creates a **Job** (one-time run) each time it triggers, which in turn creates a **Pod**.
 
@@ -374,7 +342,7 @@ A **CronJob** is a scheduled task that runs automatically at defined intervals. 
 CronJob (schedule) → Job (one-time) → Pod (runs script) → Exits
 ```
 
-### Key CronJob Settings
+### Key cronjob settings
 
 | Setting                      | Purpose                                                       |
 | ---------------------------- | ------------------------------------------------------------- |
@@ -388,7 +356,7 @@ CronJob (schedule) → Job (one-time) → Pod (runs script) → Exits
 | `restartPolicy: Never`       | Don't restart a failed pod (CronJob retries on next schedule) |
 | `backoffLimit: 0`            | No retries on failure                                         |
 
-### Cron Schedule Reference
+### Cron schedule reference
 
 ```
 "*/15 * * * *"  = every 15 minutes
@@ -404,7 +372,7 @@ CronJob (schedule) → Job (one-time) → Pod (runs script) → Exits
 * * * * *
 ```
 
-### Manually Trigger a CronJob
+### Manually triggering a cronjob
 
 ```bash
 # Create a one-time test job from your CronJob template
@@ -421,10 +389,9 @@ oc delete job <namespace>-liveness-test-1
 ```
 
 > Jobs cannot be overwritten. Use a new name (e.g. `<namespace>-liveness-test-2`) or delete the old one first.
+---
 
-
-
-## Health Checks and Liveness Probes
+# Health Checks and Liveness Probes
 
 ### Liveness vs Readiness
 
@@ -464,7 +431,7 @@ livenessProbe:
   failureThreshold: 3        # restart after 3 failures
 ```
 
-### When and Why to Use Logger for Health Checks
+### Using logger library for Health Checks
 
 Use Python's `logging` library (not `print`) in your health check scripts because:
 
@@ -487,10 +454,9 @@ logger.info("✅ Service is healthy")
 logger.error("❌ Service failed")
 sys.exit(1)  # OpenShift marks Job as Failed
 ```
+---
 
-
-
-## Git Branching Strategy
+# Git Branching Strategy
 
 ### When to Branch Instead of Using Main
 
@@ -561,41 +527,17 @@ feature/liveness-check
          ▼
     Production Deploy
 ```
+---
 
+# Debugging Guide
 
-
-## Deployment Checklist
-
-### Before Deploying to Any Namespace
-
-- [ ] Correct namespace selected in OpenShift UI
-- [ ] Secrets created in this namespace
-- [ ] Image path points to `<namespace>-build`
-- [ ] CPU/memory resources specified for **all** containers
-- [ ] `initContainer` has resources specified
-- [ ] YAML cleaned of auto-generated fields
-- [ ] Database deployment ready before app deployment
-- [ ] Route created for external access
-
-### Signs Everything Is Working
-
-- [ ] All pods show `1 of 1 (Running)` ✅
-- [ ] No errors in Events tab ✅
-- [ ] Logs show app started successfully ✅
-- [ ] Route URL accessible in browser ✅
-- [ ] `/docs` endpoint works (FastAPI) ✅
-
-
-
-## Debugging Guide
-
-### Pod Not Starting?
+### Pod not starting?
 
 1. Go to **Workloads → Deployments → Details** → check **Conditions**
 2. Go to **Workloads → Pods** → click pod → **Events tab**
 3. Click pod → **Logs tab**
 
-### Common Errors
+### Common errors
 
 | Error                     | Cause                                  | Fix                                     |
 | ------------------------- | -------------------------------------- | --------------------------------------- |
@@ -605,7 +547,7 @@ feature/liveness-check
 | `CrashLoopBackOff`        | App crashing on startup                | Check Logs tab                          |
 | `must specify limits.cpu` | Missing resources on initContainer     | Add `resources` block to all containers |
 
-### Pod Status Reference
+### Pod status reference
 
 | Status               | Meaning                   |
 | -------------------- | ------------------------- |
@@ -615,10 +557,9 @@ feature/liveness-check
 | ⚪ `Pending`          | Waiting to start          |
 | 🟡 `Init`             | initContainer running     |
 | 🔴 `ImagePullBackOff` | Cannot find or pull image |
+---
 
-
-
-## Important Considerations
+# Important considerations
 
 ### Secrets
 
@@ -653,7 +594,6 @@ resources:
 - After that, use `oc apply -f` or edit via the YAML tab in the UI
 
 ### Cleaning Exported YAML
-
 When copying a YAML from one namespace to another, remove these auto-generated fields:
 
 ```
