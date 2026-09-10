@@ -1,5 +1,5 @@
 ---
-title: Connecting to Oracle Database using Python and finding server details using tnsping
+title: Red Hat Openshift Guide
 date:  2026-09-09 22:00:00 +0800
 categories: [Knowledge, Red Hat Openshift]
 tags: [kubernetes, docker, documentation, knowledge]
