@@ -8,15 +8,17 @@ description: A guide on using Red Hat Openshift for building and deploying appli
 
 
 # What is Red Hat OpenShift?
+
 Red Hat OpenShift is a **cloud platform** that runs your applications reliably, at scale, and automatically.
 
 | Environments          | Description                                          |
 | --------------------- | ---------------------------------------------------- |
 | **Your laptop**       | Runs 1 app, for 1 person                             |
 | **Red Hat Openshift** | Runs 100 apps, for millions of people, automatically |
----
+
 
 # Key concepts in Red Hat Openshift
+
 | Term                  | Description                                      |
 | --------------------- | ------------------------------------------------ |
 | **Container**         | A packaged app with everything it needs to run   |
@@ -31,9 +33,10 @@ Red Hat OpenShift is a **cloud platform** that runs your applications reliably, 
 | **ConfigMap**         | Stores non-sensitive settings                    |
 | **PVC**               | Persistent storage that survives pod restarts    |
 | **CronJob**           | A scheduled task that runs on a defined interval |
----
+
 
 # Overall flow from Gitlab to deployment
+
 ```
 YOUR CODE IN GITLAB
 (app.py, requirements.txt)
@@ -78,6 +81,7 @@ YOUR CODE IN GITLAB
 ---
 
 # The three environments within Red Hat Openshift
+
 ```
 ┌──────────────────────────────────────────────────────┐
 │                  BUILD NAMESPACE                     |
@@ -109,6 +113,7 @@ YOUR CODE IN GITLAB
 ---
 
 # The minimum files you need for deployment
+
 ```
 your-project/
 ├── app.py                    ← Your Python code
@@ -144,10 +149,10 @@ your-project/
 
 ```
 >**Rule:** 
-- If traffic stays inside OpenShift (e.g. your CronJob pinging the backend), use the Service name. 
-- If a browser or external tool needs access, create a Route.
----
+>- If traffic stays inside OpenShift (e.g. your CronJob pinging the backend), use the Service name. 
+>- If a browser or external tool needs access, create a Route.
 
+---
 # OC Command Line Tool (CLI)
 
 ### Installation
@@ -194,6 +199,7 @@ oc rollout undo deployment/<name>
 ```
 
 > **Token Expiry:** Tokens expire (usually within 24 hours). Run `oc whoami` to check. If expired, get a fresh token from the OpenShift UI → your username → **Copy login command**.
+
 ---
 
 # Building images and deploying via OC CLI
@@ -278,8 +284,8 @@ spec:
 | `alpine`   | Lightweight Linux (~80MB vs ~400MB for standard)     |
 
 The PVC mounts to `/var/lib/postgresql/data` inside the container so all database records survive pod restarts.
----
 
+---
 # When to rebuild vs "oc apply"
 
 ### Rebuild image — when code changes
@@ -302,8 +308,8 @@ Run `oc apply -f yourfile.yaml` when you change:
 # Secrets inside Red Hat Openshift
 
 Update and store all secrets directly in OpenShift UI. Whenever there is a change in secret value, there is no need to rebuild and no `oc apply` needed. The next pod startup automatically reads and take in the values from the secrets.
----
 
+---
 # Port forwarding for local development
 
 ### What it does
@@ -332,8 +338,8 @@ oc port-forward svc/<namespace>-backend-svc 9090:8080
 ```
 
 > **Important:** Keep the terminal window open. Closing it breaks the tunnel. Open a second terminal to run your scripts.
----
 
+---
 # Cronjobs in Red Hat penShift
 
 A **CronJob** is a scheduled task that runs automatically at defined intervals. It creates a **Job** (one-time run) each time it triggers, which in turn creates a **Pod**.
@@ -389,8 +395,8 @@ oc delete job <namespace>-liveness-test-1
 ```
 
 > Jobs cannot be overwritten. Use a new name (e.g. `<namespace>-liveness-test-2`) or delete the old one first.
----
 
+---
 # Health Checks and Liveness Probes
 
 ### Liveness vs Readiness
@@ -557,8 +563,8 @@ feature/liveness-check
 | ⚪ `Pending`          | Waiting to start          |
 | 🟡 `Init`             | initContainer running     |
 | 🔴 `ImagePullBackOff` | Cannot find or pull image |
----
 
+---
 # Important considerations
 
 ### Secrets
