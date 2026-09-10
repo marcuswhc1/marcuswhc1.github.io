@@ -327,10 +327,10 @@ oc project <namespace>-build
 oc apply -f bc.yaml
 
 # 3. Trigger the first build
-oc start-build <namespace>-backend
+oc start-build <buildconfig-name>
 
 # 4. Watch build progress
-oc logs -f bc/<namespace>-backend
+oc logs -f bc/<buildconfig-name>
 
 # 5. Switch to staging
 oc project <namespace>-staging
