@@ -1,9 +1,9 @@
 ---
-title: Red Hat Openshift Guide
+title: Red Hat OpenShift Guide
 date:  2026-09-09 22:00:00 +0800
-categories: [Knowledge, Red Hat Openshift]
+categories: [Knowledge, Red Hat OpenShift]
 tags: [kubernetes, docker, documentation, knowledge]
-description: A guide on using Red Hat Openshift for building and deploying applications in the cloud enviroment.
+description: A guide on using Red Hat OpenShift for building and deploying applications in the cloud enviroment.
 ---
 
 
@@ -14,10 +14,10 @@ Red Hat OpenShift is a **cloud platform** that runs your applications reliably, 
 | Environments          | Description                                          |
 | --------------------- | ---------------------------------------------------- |
 | **Your laptop**       | Runs 1 app, for 1 person                             |
-| **Red Hat Openshift** | Runs 100 apps, for millions of people, automatically |
+| **Red Hat OpenShift** | Runs 100 apps, for millions of people, automatically |
 
 
-# Key concepts in Red Hat Openshift
+# Key concepts in Red Hat OpenShift
 
 | Term                  | Description                                      |
 | --------------------- | ------------------------------------------------ |
@@ -35,10 +35,10 @@ Red Hat OpenShift is a **cloud platform** that runs your applications reliably, 
 | **CronJob**           | A scheduled task that runs on a defined interval |
 
 
-# Overall flow from Gitlab to deployment
+# Overall flow from GitLab to deployment
 
 ```
-YOUR CODE IN GITLAB
+Code in GitLab
 (app.py, requirements.txt)
          │
          ▼
@@ -80,7 +80,7 @@ YOUR CODE IN GITLAB
 ```
 ---
 
-# The three environments within Red Hat Openshift
+# The three environments within Red Hat OpenShift
 
 ```
 ┌──────────────────────────────────────────────────────┐
@@ -126,7 +126,7 @@ your-project/
 ---
 
 # Differences: Staging vs Production enviroment
-```
+
 | Setting      | Staging             | Production        |
 | ------------ | ------------------- | ----------------- |
 | namespace    | <namespace>-staging | <namespace>-prod  |
@@ -134,11 +134,11 @@ your-project/
 | Image source | <namespace>-build   | <namespace>-build |
 | Database     | Test DB             | Real DB           |
 | Secrets      | Test values         | Real values       |
-```
+
 ---
 
 # Differences: Routes vs Services
-```
+
 |                 | Service                              | Route                                        |
 | --------------- | ------------------------------------ | -------------------------------------------- |
 | Purpose         | Internal pod-to-pod communication    | External public access                       |
@@ -147,12 +147,11 @@ your-project/
 | Created by      | Your deployment YAML                 | Manually or via YAML                         |
 | Use for         | Pod-to-pod, CronJobs, DB connections | Frontend, external APIs                      |
 
-```
 >**Rule:** 
 >- If traffic stays inside OpenShift (e.g. your CronJob pinging the backend), use the Service name. 
 >- If a browser or external tool needs access, create a Route.
 
----
+
 # OC Command Line Tool (CLI)
 
 ### Installation
@@ -200,7 +199,7 @@ oc rollout undo deployment/<name>
 
 > **Token Expiry:** Tokens expire (usually within 24 hours). Run `oc whoami` to check. If expired, get a fresh token from the OpenShift UI → your username → **Copy login command**.
 
----
+
 
 # Building images and deploying via OC CLI
 
@@ -273,7 +272,7 @@ spec:
 ```
 ---
 
-# Containerised PostgresSQL in Red Hat Openshift
+# Containerised PostgresSQL in Red Hat OpenShift
 
 `postgres:16-alpine` is a **containerised PostgreSQL database**.
 
@@ -303,20 +302,20 @@ Run `oc apply -f yourfile.yaml` when you change:
 - `cronjob.yaml`
 - `deployment.yaml`
 - `bc.yaml`
----
 
-# Secrets inside Red Hat Openshift
+---
+# Secrets inside Red Hat OpenShift
 
 Update and store all secrets directly in OpenShift UI. Whenever there is a change in secret value, there is no need to rebuild and no `oc apply` needed. The next pod startup automatically reads and take in the values from the secrets.
 
 ---
 # Port forwarding for local development
 
-### What it does
+### What is porrt forwarding?
 Port forwarding creates a **temporary tunnel** from your local computer to a pod running inside OpenShift. This lets you test services locally without needing a public Route.
 
 ```
-YOUR LAPTOP          OPENSHIFT
+YOUR LAPTOP          OpenShift
 ────────────         ──────────
 localhost:8080  ←──► <namespace>-backend-svc:8080
      ↑
@@ -339,8 +338,8 @@ oc port-forward svc/<namespace>-backend-svc 9090:8080
 
 > **Important:** Keep the terminal window open. Closing it breaks the tunnel. Open a second terminal to run your scripts.
 
----
-# Cronjobs in Red Hat penShift
+
+# Cronjobs in Red Hat OpenShift
 
 A **CronJob** is a scheduled task that runs automatically at defined intervals. It creates a **Job** (one-time run) each time it triggers, which in turn creates a **Pod**.
 
@@ -396,8 +395,8 @@ oc delete job <namespace>-liveness-test-1
 
 > Jobs cannot be overwritten. Use a new name (e.g. `<namespace>-liveness-test-2`) or delete the old one first.
 
----
-# Health Checks and Liveness Probes
+
+# Health checks and liveness Ppobes
 
 ### Liveness vs Readiness
 
@@ -406,7 +405,7 @@ oc delete job <namespace>-liveness-test-1
 | **livenessProbe**  | Is the app still alive?       | OpenShift **restarts** the pod         |
 | **readinessProbe** | Is the app ready for traffic? | OpenShift **stops routing** to the pod |
 
-### How It Works
+### How it works
 
 OpenShift does **not** read your Python code. It simply sends an HTTP request to the pod's IP and port at the configured path:
 
@@ -424,7 +423,7 @@ def health_check():
 
 Returning `HTTP 200` = healthy. Returning `HTTP 500` = OpenShift restarts the pod.
 
-### YAML Configuration
+### YAML configuration
 
 ```yaml
 livenessProbe:
@@ -437,7 +436,7 @@ livenessProbe:
   failureThreshold: 3        # restart after 3 failures
 ```
 
-### Using logger library for Health Checks
+### Using logger library for health checks
 
 Use Python's `logging` library (not `print`) in your health check scripts because:
 
@@ -462,9 +461,9 @@ sys.exit(1)  # OpenShift marks Job as Failed
 ```
 ---
 
-# Git Branching Strategy
+# Git branching
 
-### When to Branch Instead of Using Main
+### When to branch Instead of using main
 
 - **Always branch** when developing new features, fixes, or testing deployments
 - **Never test directly on `main`** — it affects the whole team
@@ -476,7 +475,7 @@ main (stable, protected)
  └── fix/postgres-timeout
 ```
 
-### Creating and Pushing a Branch
+### Creating and pushing a branch
 
 ```bash
 # Create and switch to new branch
@@ -494,7 +493,7 @@ git push origin feature/liveness-check
 
 > If VS Code shows **"The branch has no remote branch. Would you like to publish this branch?"** — click **OK**. This is normal for a new branch being pushed to GitLab for the first time.
 
-### Switching bc.yaml to Use Your Branch
+### Switching bc.yaml to use your branch
 
 Update the `ref` field in `bc.yaml` to point to your branch instead of `main`:
 
@@ -513,7 +512,7 @@ oc apply -f bc.yaml
 oc start-build <buildconfig-name>
 ```
 
-### Flow After Development Is Complete
+### Flow after development is complete
 
 1. **Test** your feature on `<namespace>-staging` using your branch
 2. Go to GitLab → **Create Merge Request** (`feature/liveness-check` → `main`)
@@ -535,7 +534,7 @@ feature/liveness-check
 ```
 ---
 
-# Debugging Guide
+# Debugging guide
 
 ### Pod not starting?
 
@@ -593,7 +592,7 @@ resources:
 | App container   | `200m`      | `512Mi`        |
 | PostgreSQL      | `200m`      | `256Mi`        |
 
-### YAML Files in GitLab
+### YAML files in GitLab
 
 - YAML files in GitLab are **just stored there** — OpenShift does NOT auto-read them
 - You must **import them manually** into OpenShift (once)
