@@ -1,7 +1,7 @@
 ---
 title: BookMySpace Automation
 date:  2026-10-18 22:00:"00 +0800
-categories: [Project, Python]
+categories: [Project, BookMySpace]
 tags: [python, playwright, documentation, project]
 description: Automated hot desk booking using Playwright.
 ---
