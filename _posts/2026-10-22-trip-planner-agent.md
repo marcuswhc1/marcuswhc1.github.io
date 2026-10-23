@@ -3,7 +3,7 @@ title: Trip Planner Agent
 date:  2026-10-22 22:00:00 +0800
 categories: [Project, "Trip Planner Agent (Completed)"]
 tags: [python, langraph, gradio, "agentic ai", documentation, project]     # TAG names should always be lowercase
-description: An agentic AI travel assistant powered by Ollama and Gradio, that can search for attractions, flights, weather, public holidays, convert currencies, and export itineraries as Word documents.
+description: An agentic AI travel assistant powered by Ollama and Gradio.
 ---
 
 # Trip Planning Agent
